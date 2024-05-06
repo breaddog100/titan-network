@@ -20,7 +20,7 @@ function install_node() {
 	# 节点数量
 	read -p "节点数量: " docker_count
 	# 拉取Docker镜像
-	docker pull nezha123/titan-edge:1.5
+	sudo docker pull nezha123/titan-edge:1.5
 	
 	# 创建币启动容器
 	port=40000
@@ -31,22 +31,20 @@ function install_node() {
 	    mkdir -p "$HOME/titan_storage_$i"
 	
 	    # 启动节点
-	    container_id=$(docker run -d --restart always -v "$HOME/titan_storage_$i:$HOME/.titanedge/storage" --name "titan$i" --net=host  nezha123/titan-edge:1.5)
-	
+	    container_id=$(sudo docker run -d --restart always -v "$HOME/titan_storage_$i:$HOME/.titanedge/storage" --name "titan$i" --net=host  nezha123/titan-edge:1.5)
 	    echo "节点 titan$i 已经启动 容器ID $container_id"
-	
 	    sleep 30
 	
 	    # 配置存储和端口
-	    docker exec $container_id bash -c "\
+	    sudo docker exec $container_id bash -c "\
 	        sed -i 's/^[[:space:]]*#StorageGB = .*/StorageGB = 50/' $HOME/.titanedge/config.toml && \
 	        sed -i 's/^[[:space:]]*#ListenAddress = \"0.0.0.0:1234\"/ListenAddress = \"0.0.0.0:$current_port\"/' $HOME/.titanedge/config.toml && \
 	        echo '容器 titan'$i' 的存储空间设置为 50 GB，端口为 $current_port'"
 	
-	    docker restart $container_id
+	    sudo docker restart $container_id
 	
 	    # 启动docker
-	    docker exec $container_id bash -c "\
+	    sudo docker exec $container_id bash -c "\
 	        titan-edge bind --hash=$uid https://api-test1.container1.titannet.io/api/v2/device/binding"
 	    echo "节点 titan$i 已绑定."
 	
