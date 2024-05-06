@@ -23,13 +23,15 @@ function install_node() {
     sudo apt upgrade -y
    
 	# 身份码
-	read -p "身份码: " uid	
+	read -p "身份码: " uid
+	# 节点数量
+	read -p "节点数量: " docker_count
 	# 拉取Docker镜像
 	docker pull nezha123/titan-edge:1.5
 	
 	# 创建币启动容器
 	port=40000
-	for ((i=1; i<=5; i++))
+	for ((i=1; i<=docker_count; i++))
 	do
 	    current_port=$((port + i - 1))
 	    # 创建存储目录
