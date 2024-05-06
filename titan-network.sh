@@ -23,15 +23,15 @@ function install_node() {
 	sudo docker pull nezha123/titan-edge:1.5
 	
 	# 创建币启动容器
-	port=40000
+	titan_port=40000
 	for ((i=1; i<=docker_count; i++))
 	do
-	    current_port=$((port + i - 1))
+	    current_port=$((titan_port + i - 1))
 	    # 创建存储目录
 	    mkdir -p "$HOME/titan_storage_$i"
 	
 	    # 启动节点
-	    container_id=$(sudo docker run -d --restart always -v "$HOME/titan_storage_$i:$HOME/.titanedge/storage" --name "titan$i" --net=host  nezha123/titan-edge:1.5)
+	    container_id=$(sudo docker run -d --restart always -v "$HOME/titan_storage_$i:/root/.titanedge/storage" --name "titan$i" --net=host  nezha123/titan-edge:1.5)
 	    echo "节点 titan$i 已经启动 容器ID $container_id"
 	    sleep 30
 	
