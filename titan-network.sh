@@ -3,24 +3,18 @@
 # 节点安装功能
 function install_node() {
 
+	sudo apt update
+    sudo apt upgrade -y
+
     # 检查 Docker 是否已安装
     if ! command -v docker &> /dev/null
     then
         echo "安装Docker..."
-        # 添加 Docker 官方 GPG 密钥
-        sudo mkdir -p /etc/apt/keyrings
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-        # 设置 Docker 仓库
-        echo \
-          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-          $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-        sudo chmod a+r /etc/apt/keyrings/docker.gpg
+        apt-get install ca-certificates curl gnupg lsb-release -y
+        apt-get install docker.io -y
     else
         echo "Docker 已安装。"
     fi
-    
-    sudo apt update
-    sudo apt upgrade -y
    
 	# 身份码
 	read -p "身份码: " uid
