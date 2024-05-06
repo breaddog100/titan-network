@@ -97,29 +97,33 @@ function update_uid() {
 
 # MENU
 function main_menu() {
-    clear
-    echo "===============Titan Network 一键部署脚本==============="
-    echo "沟通电报群：https://t.me/lumaogogogo"
-    echo "最低配置：1C2G64G；推荐配置：6C12G300G"
-    echo "1. 安装节点install node"
-    echo "2. 查看节点状态cosmovisor status"
-    echo "3. 查看节点任务check node cache"
-    echo "4. 停止挂机stop node"
-    echo "5. 开始挂机start node"
-    echo "6. 修改身份码update uid"
-    echo "0. 退出脚本exit"
-    read -r -p "请输入选项: " OPTION
-
-    case $OPTION in
-    1) install_node ;;
-    2) check_service_status ;;
-    3) check_node_cache ;;
-    4) stop_node ;;
-    5) start_node ;;
-    6) update_uid ;;
-    0) echo "退出脚本。"; exit 0 ;;
-    *) echo "无效选项，请重新输入。"; sleep 3 ;;
-    esac
+	while true; do
+	    clear
+	    echo "===============Titan Network 一键部署脚本==============="
+	    echo "沟通电报群：https://t.me/lumaogogogo"
+	    echo "最低配置：1C2G64G；推荐配置：6C12G300G"
+	    echo "1. 安装节点install node"
+	    echo "2. 查看节点状态cosmovisor status"
+	    echo "3. 查看节点任务check node cache"
+	    echo "4. 停止挂机stop node"
+	    echo "5. 开始挂机start node"
+	    echo "6. 修改身份码update uid"
+	    echo "0. 退出脚本exit"
+	    read -r -p "请输入选项: " OPTION
+	
+	    case $OPTION in
+	    1) install_node ;;
+	    2) check_service_status ;;
+	    3) check_node_cache ;;
+	    4) stop_node ;;
+	    5) start_node ;;
+	    6) update_uid ;;
+	    0) echo "退出脚本。"; exit 0 ;;
+	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
+	    esac
+	    echo "按任意键返回主菜单..."
+        read -n 1
+    done
 }
 
 # SHOW MENU
