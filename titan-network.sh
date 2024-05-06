@@ -10,8 +10,7 @@ function install_node() {
     if ! command -v docker &> /dev/null
     then
         echo "安装Docker..."
-        apt-get install ca-certificates curl gnupg lsb-release -y
-        apt-get install docker.io -y
+        sudo apt install  -y ca-certificates curl gnupg lsb-release docker.io
     else
         echo "Docker 已安装。"
     fi
