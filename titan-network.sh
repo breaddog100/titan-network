@@ -43,10 +43,10 @@ function install_node() {
 	
 	    sudo docker restart $container_id
 	
-	    # 启动docker
+	    # 开始挂机
 	    sudo docker exec $container_id bash -c "\
 	        titan-edge bind --hash=$uid https://api-test1.container1.titannet.io/api/v2/device/binding"
-	    echo "节点 titan$i 已绑定."
+	    echo "节点 titan$i 开始挂机."
 	
 	done
 	
@@ -56,33 +56,43 @@ function install_node() {
 
 # 查看节点状态
 function check_service_status() {
-    cd simple-taiko-node
-    sudo docker compose logs -f --tail 30
+    sudo docker ps
 }
 
-# 启动节点
-function start_node() {
-    cd simple-taiko-node
-    sudo docker compose up -d
+# 查看节点任务
+function check_node_cache() {
+	for container in $(sudo docker ps -q); do
+		echo "查看节点：$container 任务："
+		sudo docker exec -it "$container" titan-edge cache
+	done
 }
 
 # 停止节点
 function stop_node() {
-    cd simple-taiko-node
-    sudo docker compose down
+	for container in $(sudo docker ps -q); do
+		echo "停止节点：$container "
+		sudo docker exec -it "$container" titan-edge daemon stop
+	done
 }
 
-# 修改秘钥
-function update_private_key() {
-	cd simple-taiko-node
-	read -p "请输入EVM钱包私钥: " l1_proposer_private_key
-	sed -i "s|L1_PROPOSER_PRIVATE_KEY=.*|L1_PROPOSER_PRIVATE_KEY=${l1_proposer_private_key}|" .env
-	# 修改端口
-	ip_address=$(hostname -I | awk '{print $1}')
-	port_grafana=$(echo $ip_address | cut -d '.' -f 3,4 | tr -d '.')
-	sed -i "s|PORT_GRAFANA=.*|PORT_GRAFANA=${port_grafana}|" .env
-	sudo docker compose down
-	sudo docker compose up -d
+# 启动节点
+function start_node() {
+	for container in $(sudo docker ps -q); do
+		echo "启动节点：$container "
+		sudo docker exec -it "$container" titan-edge daemon start
+	done
+}
+
+# 修改身份码
+function update_uid() {
+	# 身份码
+	read -p "身份码: " uid
+	for container in $(sudo docker ps -q); do
+		echo "启动节点：$container "
+		sudo docker exec -it "$container" bash -c "\
+	        titan-edge bind --hash=$uid https://api-test1.container1.titannet.io/api/v2/device/binding"
+	    echo "节点 $container 开始挂机."
+	done
 }
 
 # MENU
@@ -93,18 +103,20 @@ function main_menu() {
     echo "最低配置：1C2G64G；推荐配置：6C12G300G"
     echo "1. 安装节点install node"
     echo "2. 查看节点状态cosmovisor status"
-    echo "3. 启动节点start node"
-    echo "4. 停止节点stop node"
-    echo "5. 修改秘钥update private key"
+    echo "3. 查看节点任务check node cache"
+    echo "4. 停止挂机stop node"
+    echo "5. 开始挂机start node"
+    echo "6. 修改身份码update uid"
     echo "0. 退出脚本exit"
     read -r -p "请输入选项: " OPTION
 
     case $OPTION in
     1) install_node ;;
     2) check_service_status ;;
-    3) start_node ;;
+    3) check_node_cache ;;
     4) stop_node ;;
-    5) update_private_key ;;
+    5) start_node ;;
+    6) update_uid ;;
     0) echo "退出脚本。"; exit 0 ;;
     *) echo "无效选项，请重新输入。"; sleep 3 ;;
     esac
