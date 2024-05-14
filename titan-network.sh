@@ -16,9 +16,9 @@ function install_node() {
     fi
    
 	# 身份码
-	read -p "身份码: " uid
+	read -p "uid: " uid
 	# 节点数量
-	read -p "节点数量: " docker_count
+	read -p "docker_count: " docker_count
 	# 拉取Docker镜像
 	sudo docker pull nezha123/titan-edge:1.5
 	
