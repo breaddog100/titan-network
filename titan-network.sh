@@ -109,7 +109,7 @@ function main_menu() {
 	    echo "5. 开始挂机start node"
 	    echo "6. 修改身份码update uid"
 	    echo "0. 退出脚本exit"
-	    read -r -p "请输入选项: " OPTION
+	    read -r -p "OPTION: " OPTION
 	
 	    case $OPTION in
 	    1) install_node ;;
