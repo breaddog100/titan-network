@@ -37,7 +37,7 @@ function install_node() {
 	
 	    # 配置存储和端口
 	    sudo docker exec $container_id bash -c "\
-	        sed -i 's/^[[:space:]]*#StorageGB = .*/StorageGB = 145/' /root/.titanedge/config.toml && \
+	        sed -i 's/^[[:space:]]*#StorageGB = .*/StorageGB = 95/' /root/.titanedge/config.toml && \
 	        sed -i 's/^[[:space:]]*#ListenAddress = \"0.0.0.0:1234\"/ListenAddress = \"0.0.0.0:$current_port\"/' /root/.titanedge/config.toml && \
 	        echo '容器 titan'$i' 的存储空间设置为 145 GB，端口为 $current_port'"
 	
