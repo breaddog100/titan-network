@@ -23,7 +23,7 @@ function install_node() {
 	sudo docker pull nezha123/titan-edge:1.5
 	
 	# 创建币启动容器
-	titan_port=40000
+	titan_port=50000
 	for ((i=1; i<=docker_count; i++))
 	do
 	    current_port=$((titan_port + i - 1))
