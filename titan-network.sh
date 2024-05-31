@@ -16,14 +16,14 @@ function install_node() {
     fi
    
 	# 身份码
-	read -p "身份码: " uid
+	read -p "uid: " uid
 	# 节点数量
-	read -p "节点数量: " docker_count
+	read -p "docker_count: " docker_count
 	# 拉取Docker镜像
 	sudo docker pull nezha123/titan-edge:1.5
 	
 	# 创建币启动容器
-	titan_port=40000
+	titan_port=50000
 	for ((i=1; i<=docker_count; i++))
 	do
 	    current_port=$((titan_port + i - 1))
@@ -37,9 +37,9 @@ function install_node() {
 	
 	    # 配置存储和端口
 	    sudo docker exec $container_id bash -c "\
-	        sed -i 's/^[[:space:]]*#StorageGB = .*/StorageGB = 50/' /root/.titanedge/config.toml && \
+	        sed -i 's/^[[:space:]]*#StorageGB = .*/StorageGB = 147/' /root/.titanedge/config.toml && \
 	        sed -i 's/^[[:space:]]*#ListenAddress = \"0.0.0.0:1234\"/ListenAddress = \"0.0.0.0:$current_port\"/' /root/.titanedge/config.toml && \
-	        echo '容器 titan'$i' 的存储空间设置为 50 GB，端口为 $current_port'"
+	        echo '容器 titan'$i' 的存储空间设置为 147 GB，端口为 $current_port'"
 	
 	    sudo docker restart $container_id
 	
@@ -109,7 +109,7 @@ function main_menu() {
 	    echo "5. 开始挂机start node"
 	    echo "6. 修改身份码update uid"
 	    echo "0. 退出脚本exit"
-	    read -r -p "请输入选项: " OPTION
+	    read -r -p "OPTION: " OPTION
 	
 	    case $OPTION in
 	    1) install_node ;;
