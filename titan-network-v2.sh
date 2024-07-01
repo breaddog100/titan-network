@@ -35,24 +35,8 @@ EOF
 	sudo systemctl daemon-reload
     sudo systemctl enable titan-candidate-daemond
     sudo systemctl start titan-candidate-daemond
-
-	sudo tee /etc/systemd/system/titan-candidate-bind.service > /dev/null <<EOF
-[Unit]
-Description=Titan candidate Service
-After=network.target
-[Service]
-ExecStart=$HOME/titan-l1-guardian bind --hash=$UUID https://api-test1.container1.titannet.io/api/v2/device/binding
-Restart=always
-RestartSec=3
-User=$USER
-Environment=$HOME/
-[Install]
-WantedBy=multi-user.target
-EOF
-
-	sudo systemctl daemon-reload
-    sudo systemctl enable titan-candidate-bind
-    sudo systemctl start titan-candidate-bind
+    
+    ./titan-l1-guardian bind --hash=$UUID https://api-test1.container1.titannet.io/api/v2/device/binding
     
 	echo "部署完成"
 }
@@ -87,7 +71,7 @@ function l2_install_node_for_cn() {
     else
         echo "Docker 已安装。"
     fi
-    wget =====
+    #wget =====
 	docker load -i titan-edge.tar
     mkdir ~/.titanedge
     sudo docker run --network=host -d -v ~/.titanedge:/root/.titanedge nezha123/titan-edge
@@ -98,7 +82,7 @@ function l2_install_node_for_cn() {
 
 # L1节点日志
 function l1_node_log(){
-	sudo journalctl -u titan-candidate-bind -f -o cat
+	sudo journalctl -u titan-candidate-daemond -f -o cat
 }
 
 # L2节点日志
