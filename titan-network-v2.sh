@@ -108,7 +108,8 @@ function l2_node_log(){
 
 # 停止l1节点
 function l2_stop_node(){
-	./titan-l1-guardian daemon stop
+	sudo systemctl stop titan-candidate-daemond
+	sudo systemctl stop titan-candidate-bind
 	echo "L1 节点已停止"
 }
 
