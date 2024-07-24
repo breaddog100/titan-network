@@ -5,7 +5,7 @@ function l1_install_node() {
 	read -p "请输入code id:" code_id
 	read -p "请输入身份码:" UUID
 	sudo apt update && sudo apt upgrade -y
-	wget https://github.com/Titannet-dao/titan-node/releases/download/v0.1.19/titan-l1-guardian
+	wget https://github.com/Titannet-dao/titan-node/releases/download/v0.1.19-b/titan-l1-guardian
 	chmod 0755 titan-l1-guardian
 	mkdir -p $HOME/titan_storage
 	export TITAN_METADATAPATH=$HOME/titan_storage
@@ -114,9 +114,9 @@ function l2_stop_node(){
 function l1_update_node(){
 	cd $HOME
 	l1_stop_node
-	wget https://github.com/Titannet-dao/titan-node/releases/download/v0.1.19-b/titan-guardian
-	mv titan-guardian titan-l1-guardian
+	wget https://github.com/Titannet-dao/titan-node/releases/download/v0.1.19-b/titan-l1-guardian
 	chmod 0755 titan-l1-guardian
+	./titan-l1-guardian -v
 	l1_start_node
 }
 
