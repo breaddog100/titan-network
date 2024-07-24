@@ -17,7 +17,6 @@ function l1_install_node() {
 	#nohup ./titan-l1-guardian daemon start --init --url https://cassini-locator.titannet.io:5000/rpc/v0 --code $code_id > $HOME/guardian.log 2>&1 &
 	#./titan-l1-guardian bind --hash=$UUID https://api-test1.container1.titannet.io/api/v2/device/binding
 
-
 	sudo tee /etc/systemd/system/titan-candidate-daemond.service > /dev/null <<EOF
 [Unit]
 Description=Titan candidate Service
@@ -91,9 +90,17 @@ function l2_node_log(){
 }
 
 # 停止l1节点
-function l2_stop_node(){
+function l1_stop_node(){
 	sudo systemctl stop titan-candidate-daemond
-	sudo systemctl stop titan-candidate-bind
+	sudo pkill -9 titan-l1-guardian
+	echo "L1 节点已停止"
+}
+
+# 启动l1节点
+function l1_start_node(){
+	read -p "请输入身份码:" UUID
+	sudo systemctl start titan-candidate-daemond
+	./titan-l1-guardian bind --hash=$UUID https://api-test1.container1.titannet.io/api/v2/device/binding
 	echo "L1 节点已停止"
 }
 
@@ -101,6 +108,16 @@ function l2_stop_node(){
 function l2_stop_node(){
 	sudo docker stop priceless_brattain
 	echo "L2 节点已停止"
+}
+
+# 更新l1节点
+function l1_update_node(){
+	cd $HOME
+	l1_stop_node
+	wget https://github.com/Titannet-dao/titan-node/releases/download/v0.1.19-b/titan-guardian
+	mv titan-guardian titan-l1-guardian
+	chmod 0755 titan-l1-guardian
+	l1_start_node
 }
 
 # 卸载节点
@@ -137,6 +154,8 @@ function main_menu() {
 	    echo "10. 部署L1节点 l1_install_node"
 	    echo "11. 停止L1节点 l1_stop_node"
 	    echo "12. 查看L1日志 l1_node_log"
+	    echo "13. 启动L1节点 l1_start_node"
+	    echo "14. 更新v0.1.19-b l1_update_node"
 	    echo "---------------------------L2节点----------------------------"
 	    echo "20. 部署L2节点 l2_install_node"
 	    echo "21. 停止L2节点 l2_stop_node"
@@ -150,6 +169,8 @@ function main_menu() {
 	    10) l1_install_node ;;
 	    11) l1_stop_node ;;
 	    12) l1_node_log ;;
+	    13) l1_start_node ;;
+	    14) l1_update_node ;;
 	    
 	    20) l2_install_node ;;
 	    21) l2_stop_node ;;
