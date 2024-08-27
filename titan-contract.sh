@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240828002
+current_version=20240828003
 
 update_script() {
     # 指定URL
@@ -51,77 +51,61 @@ function check_go_installation() {
     fi
 }
 
-function create_wallet(){
+function create_wallet {
 
     # 合约参数
     read -p "钱包名称: " WALLET_NAME
 
     # 更新和安装必要的软件
     sudo apt update && sudo apt upgrade -y
-    sudo apt install -y build-essential git wget jq make gcc nano tmux htop nvme-cli pkg-config libssl-dev libleveldb-dev tar clang bsdmainutils ncdu unzip libleveldb-dev lz4 snapd jq curl
+    sudo apt install -y build-essential git wget jq make gcc nano tmux htop nvme-cli pkg-config libssl-dev libleveldb-dev tar clang bsdmainutils ncdu unzip libleveldb-dev lz4 snapd curl
 
     # 安装 Go
-    if ! check_go_installation; then
-        # 安装GO
+    if ! command -v go &> /dev/null; then
+        echo "Installing Go..."
         sudo rm -rf /usr/local/go
         wget https://go.dev/dl/go1.22.1.linux-amd64.tar.gz -P /tmp/
         sudo tar -C /usr/local -xzf /tmp/go1.22.1.linux-amd64.tar.gz
-        echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.bashrc
+        echo "export PATH=\$PATH:/usr/local/go/bin:\$HOME/go/bin" >> ~/.bashrc
         export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
-        go version
+        source ~/.bashrc  # 使改动立即生效
+        go version || { echo "Go installation failed"; exit 1; }
     fi
-    
+
+    # 安装 Rust
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-    sudo apt update
-    sudo snap install rustup --classic
-    sudo snap install yq
-
+    source $HOME/.cargo/env  # 确保 Rust 的环境变量生效
     rustup default stable
-    cargo version
-    # If this is lower than 1.55.0+, update
     rustup update stable
-
-    rustup target list --installed
     rustup target add wasm32-unknown-unknown
 
+    # 安装 Wasmd
     git clone https://github.com/CosmWasm/wasmd.git
-    cd wasmd
-    # If you are updating wasmd, first update your local repository by fetching the remote tags available
+    cd wasmd || exit
     git fetch --tags
-    # replace the v0.27.0 with the most stable version on https://github.com/CosmWasm/wasmd/tags (or look at `git tag`)
     git checkout v0.53.0
     make install
-    # verify the installation
-    wasmd version
-
-    #source <(curl -sSL https://raw.githubusercontent.com/CosmWasm/testnets/master/malaga-420/defaults.env)
-    # add wallets for testing
-    #wasmd keys add breaddog-w1
-    
-    # Download the repository
-    git clone https://github.com/deus-labs/cw-contracts.git
-    cd cw-contracts
-    git checkout main
-    cd contracts/nameservice
-
-    # compile the wasm contract with stable toolchain
-    rustup default stable
-    cargo wasm
+    wasmd version || { echo "Wasmd installation failed"; exit 1; }
+    cd ..  # 返回上一级目录
 
     # 下载合约
-    #CODE_NUM=$((RANDOM % 50 + 1))
+    git clone https://github.com/deus-labs/cw-contracts.git
+    cd cw-contracts || exit
+    git checkout main
+    cd contracts/nameservice || exit
+    cargo wasm || { echo "WASM compilation failed"; exit 1; }
+
+    # 使用 titand 查询合约
     titand query wasm code 1 --node https://rpc.titannet.io $HOME/cw-contracts/contracts/nameservice/target/wasm32-unknown-unknown/download_1.wasm
-    #RUST_BACKTRACE=1 cargo unit-test
+    cd $HOME || exit
 
     # 克隆代码库
-    cd $HOME
     git clone https://github.com/Titannet-dao/titan-chain.git
-    cd titan-chain
-    go build ./cmd/titand
+    cd titan-chain || exit
+    go build ./cmd/titand || { echo "Building titand failed"; exit 1; }
     sudo cp titand /usr/local/bin
-    titand keys add $WALLET_NAME
+    titand keys add "$WALLET_NAME" || { echo "Wallet creation failed"; exit 1; }
     echo "请记录如上钱包的信息，使用钱包地址到DC领水。"
-
 }
 
 # 部署合约
