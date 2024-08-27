@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240828001
+current_version=20240828002
 
 update_script() {
     # 指定URL
@@ -38,6 +38,17 @@ update_script() {
         rm -f $tmp
     fi
 
+}
+
+# 检查Go环境
+function check_go_installation() {
+    if command -v go > /dev/null 2>&1; then
+        echo "Go 环境已安装"
+        return 0 
+    else
+        echo "Go 环境未安装，正在安装..."
+        return 1 
+    fi
 }
 
 function create_wallet(){
@@ -88,7 +99,7 @@ function create_wallet(){
     #wasmd keys add breaddog-w1
     
     # Download the repository
-    git clone https://github.com/InterWasm/cw-contracts
+    git clone https://github.com/deus-labs/cw-contracts.git
     cd cw-contracts
     git checkout main
     cd contracts/nameservice
@@ -118,11 +129,9 @@ function install_contract(){
 
     read -p "钱包地址: " WALLET_ADDR
     read -p "合约名称: " CON_NAME
-    
-    #WALLET_ADDR=titan1vcumlrq8tfhkc0rdy7qvl0zsfwne4ua8em45jg
 
     # 安装合约
-    titand tx wasm store $HOME/cw-contracts/contracts/nameservice/target/wasm32-unknown-unknown/release/download.wasm --from $WALLET_ADDR --gas 10000000 --gas-prices 0.0025uttnt --node https://rpc.titannet.io --chain-id titan-test-3
+    titand tx wasm store $HOME/cw-contracts/contracts/nameservice/target/wasm32-unknown-unknown/release/download_1.wasm --from $WALLET_ADDR --gas 10000000 --gas-prices 0.0025uttnt --node https://rpc.titannet.io --chain-id titan-test-3
     # 需要获取code_id
     titand query wasm list-code --node https://rpc.titannet.io
 
