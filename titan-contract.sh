@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240828006
+current_version=20240828007
 
 update_script() {
     # 指定URL
@@ -138,7 +138,7 @@ function install_contract(){
     # 返回hash
     CODE_ID=$(/usr/local/bin/titand query wasm list-code --node https://rpc.titannet.io | yq e ".code_infos[] | select(.creator == \"$WALLET_ADDR\") | .code_id" - | sort -n | tail -n 1)
     #titand tx wasm instantiate $CODE_ID "$INIT" --no-admin --from $WALLET_ADDR --gas 10000000 --gas-prices 0.0025uttnt --label  txqqeth  --node https://rpc.titannet.io --chain-id titan-test-3 
-    TXHASH=$(/usr/local/bin/titand tx wasm instantiate $CODE_ID "$INIT" --no-admin --from $WALLET_ADDR --gas 100000000 --gas-prices 0.0025uttnt --label txqqeth --node https://rpc.titannet.io --chain-id titan-test-3 | grep 'txhash:' | awk '{print $2}')
+    TXHASH=$(/usr/local/bin/titand tx wasm instantiate $CODE_ID "$INIT" --no-admin --from $WALLET_ADDR --gas 100000000 --gas-prices 0.0025uttnt --label $CON_NAME --node https://rpc.titannet.io --chain-id titan-test-3 | grep 'txhash:' | awk '{print $2}')
 
     #/usr/local/bin/titand query tx $TXHASH --node https://rpc.titannet.io
     key_contract_address=$(/usr/local/bin/titand query tx $TXHASH --node https://rpc.titannet.io | yq e '.events[] | select(.type == "instantiate") | .attributes[] | select(.key == "_contract_address").value' -)
