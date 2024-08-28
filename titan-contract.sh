@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240828003
+current_version=20240828004
 
 update_script() {
     # 指定URL
@@ -95,8 +95,6 @@ function create_wallet {
     cd contracts/nameservice || exit
     cargo wasm || { echo "WASM compilation failed"; exit 1; }
 
-    # 使用 titand 查询合约
-    titand query wasm code 1 --node https://rpc.titannet.io $HOME/cw-contracts/contracts/nameservice/target/wasm32-unknown-unknown/download_1.wasm
     cd $HOME || exit
 
     # 克隆代码库
@@ -114,6 +112,8 @@ function install_contract(){
     read -p "钱包地址: " WALLET_ADDR
     read -p "合约名称: " CON_NAME
 
+    # 使用 titand 查询合约
+    titand query wasm code 1 --node https://rpc.titannet.io $HOME/cw-contracts/contracts/nameservice/target/wasm32-unknown-unknown/release/download_1.wasm
     # 安装合约
     titand tx wasm store $HOME/cw-contracts/contracts/nameservice/target/wasm32-unknown-unknown/release/download_1.wasm --from $WALLET_ADDR --gas 10000000 --gas-prices 0.0025uttnt --node https://rpc.titannet.io --chain-id titan-test-3
     # 需要获取code_id
