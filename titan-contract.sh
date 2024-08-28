@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240828007
+current_version=20240828008
 
 update_script() {
     # 指定URL
@@ -100,9 +100,6 @@ function install_env {
     go build ./cmd/titand || { echo "Building titand failed"; exit 1; }
     sudo cp titand /usr/local/bin
 
-    # titand keys add "$WALLET_NAME" || { echo "Wallet creation failed"; exit 1; }
-    # echo "请记录如上钱包的信息，使用钱包地址到DC领水，领水成功后再部署合约。"
-
 }
 
 function create_wallet(){
@@ -132,15 +129,10 @@ function install_contract(){
     /usr/local/bin/titand query wasm list-code --node https://rpc.titannet.io
 
     INIT='{"count":100}'
-    #INIT='{"purchase_price":{"amount":"100","denom":"umlg"},"transfer_price":{"amount":"999","denom":"umlg"}}'
-    #INIT='{"count":100,"name": "$CON_NAME","symbol": "$CON_NAME","decimals": 6,"initial_balances": {"amount": "100000000","address": "$WALLET_ADDR"}}'
     
     # 返回hash
     CODE_ID=$(/usr/local/bin/titand query wasm list-code --node https://rpc.titannet.io | yq e ".code_infos[] | select(.creator == \"$WALLET_ADDR\") | .code_id" - | sort -n | tail -n 1)
-    #titand tx wasm instantiate $CODE_ID "$INIT" --no-admin --from $WALLET_ADDR --gas 10000000 --gas-prices 0.0025uttnt --label  txqqeth  --node https://rpc.titannet.io --chain-id titan-test-3 
     TXHASH=$(/usr/local/bin/titand tx wasm instantiate $CODE_ID "$INIT" --no-admin --from $WALLET_ADDR --gas 100000000 --gas-prices 0.0025uttnt --label $CON_NAME --node https://rpc.titannet.io --chain-id titan-test-3 | grep 'txhash:' | awk '{print $2}')
-
-    #/usr/local/bin/titand query tx $TXHASH --node https://rpc.titannet.io
     key_contract_address=$(/usr/local/bin/titand query tx $TXHASH --node https://rpc.titannet.io | yq e '.events[] | select(.type == "instantiate") | .attributes[] | select(.key == "_contract_address").value' -)
 
     # 调用合约
