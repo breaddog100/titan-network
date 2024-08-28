@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240828004
+current_version=20240828005
 
 update_script() {
     # 指定URL
@@ -103,7 +103,7 @@ function create_wallet {
     go build ./cmd/titand || { echo "Building titand failed"; exit 1; }
     sudo cp titand /usr/local/bin
     titand keys add "$WALLET_NAME" || { echo "Wallet creation failed"; exit 1; }
-    echo "请记录如上钱包的信息，使用钱包地址到DC领水。"
+    echo "请记录如上钱包的信息，使用钱包地址到DC领水，领水成功后再部署合约。"
 }
 
 # 部署合约
@@ -113,26 +113,30 @@ function install_contract(){
     read -p "合约名称: " CON_NAME
 
     # 使用 titand 查询合约
-    titand query wasm code 1 --node https://rpc.titannet.io $HOME/cw-contracts/contracts/nameservice/target/wasm32-unknown-unknown/release/download_1.wasm
+    /usr/local/bin/titand query wasm code 1 --node https://rpc.titannet.io $HOME/cw-contracts/contracts/nameservice/target/wasm32-unknown-unknown/release/download_1.wasm
     # 安装合约
-    titand tx wasm store $HOME/cw-contracts/contracts/nameservice/target/wasm32-unknown-unknown/release/download_1.wasm --from $WALLET_ADDR --gas 10000000 --gas-prices 0.0025uttnt --node https://rpc.titannet.io --chain-id titan-test-3
+    /usr/local/bin/titand tx wasm store $HOME/cw-contracts/contracts/nameservice/target/wasm32-unknown-unknown/release/download_1.wasm --from $WALLET_ADDR --gas 10000000 --gas-prices 0.0025uttnt --node https://rpc.titannet.io --chain-id titan-test-3
     # 需要获取code_id
-    titand query wasm list-code --node https://rpc.titannet.io
+    /usr/local/bin/titand query wasm list-code --node https://rpc.titannet.io
 
     INIT='{"count":100}'
     #INIT='{"purchase_price":{"amount":"100","denom":"umlg"},"transfer_price":{"amount":"999","denom":"umlg"}}'
     #INIT='{"count":100,"name": "$CON_NAME","symbol": "$CON_NAME","decimals": 6,"initial_balances": {"amount": "100000000","address": "$WALLET_ADDR"}}'
     
     # 返回hash
-    CODE_ID=$(titand query wasm list-code --node https://rpc.titannet.io | yq e '.code_infos[] | select(.creator == "$WALLET_ADDR") | .code_id' - | sort -n | tail -n 1)
+    CODE_ID=$(/usr/local/bin/titand query wasm list-code --node https://rpc.titannet.io | yq e ".code_infos[] | select(.creator == \"$WALLET_ADDR\") | .code_id" - | sort -n | tail -n 1)
     #titand tx wasm instantiate $CODE_ID "$INIT" --no-admin --from $WALLET_ADDR --gas 10000000 --gas-prices 0.0025uttnt --label  txqqeth  --node https://rpc.titannet.io --chain-id titan-test-3 
-    TXHASH=$(titand tx wasm instantiate $CODE_ID "$INIT" --no-admin --from $WALLET_ADDR --gas 100000000 --gas-prices 0.0025uttnt --label txqqeth --node https://rpc.titannet.io --chain-id titan-test-3 | grep 'txhash:' | awk '{print $2}')
+    TXHASH=$(/usr/local/bin/titand tx wasm instantiate $CODE_ID "$INIT" --no-admin --from $WALLET_ADDR --gas 100000000 --gas-prices 0.0025uttnt --label txqqeth --node https://rpc.titannet.io --chain-id titan-test-3 | grep 'txhash:' | awk '{print $2}')
 
-    titand query tx $TXHASH --node https://rpc.titannet.io
+    #/usr/local/bin/titand query tx $TXHASH --node https://rpc.titannet.io
+    key_contract_address=$(/usr/local/bin/titand query tx $TXHASH --node https://rpc.titannet.io | yq e '.events[] | select(.type == "instantiate") | .attributes[] | select(.key == "_contract_address").value' -)
 
     # 调用合约
     REGISTER='{"reset":{"count":100}}'
-    titand tx wasm execute titan1fv955ms20zwe60a2ck29h7g9xrwz99pklnlperhnsxtmxyu2m7yq4aaqva "$REGISTER" --fees 500uttnt --from titan1vcumlrq8tfhkc0rdy7qvl0zsfwne4ua8em45jg --node https://rpc.titannet.io --chain-id titan-test-3
+    /usr/local/bin/titand tx wasm execute $key_contract_address "$REGISTER" --fees 500uttnt --from $WALLET_ADDR --node https://rpc.titannet.io --chain-id titan-test-3
+    
+    echo "合约部署完成，用上面的txhash值可以到官方浏览器中查询。"
+
 }
 
 # 主菜单
@@ -145,14 +149,12 @@ function main_menu() {
 	    echo "请选择要执行的操作:"
 	    echo "1. 创建钱包 create_wallet"
 	    echo "2. 部署合约 install_contract"
-	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
 	    case $OPTION in
 	    1) create_wallet ;;
 	    2) install_contract ;;
-	    1618) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
