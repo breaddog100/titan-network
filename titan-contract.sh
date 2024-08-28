@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240828005
+current_version=20240828006
 
 update_script() {
     # 指定URL
@@ -51,10 +51,7 @@ function check_go_installation() {
     fi
 }
 
-function create_wallet {
-
-    # 合约参数
-    read -p "钱包名称: " WALLET_NAME
+function install_env {
 
     # 更新和安装必要的软件
     sudo apt update && sudo apt upgrade -y
@@ -102,8 +99,23 @@ function create_wallet {
     cd titan-chain || exit
     go build ./cmd/titand || { echo "Building titand failed"; exit 1; }
     sudo cp titand /usr/local/bin
+
+    # titand keys add "$WALLET_NAME" || { echo "Wallet creation failed"; exit 1; }
+    # echo "请记录如上钱包的信息，使用钱包地址到DC领水，领水成功后再部署合约。"
+
+}
+
+function create_wallet(){
+    read -p "钱包名称: " WALLET_NAME
     titand keys add "$WALLET_NAME" || { echo "Wallet creation failed"; exit 1; }
     echo "请记录如上钱包的信息，使用钱包地址到DC领水，领水成功后再部署合约。"
+}
+
+function recover_wallet(){
+    read -p "钱包名称: " WALLET_NAME
+    echo "请输入钱包助记词"
+    titand keys add "$WALLET_NAME" --recover || { echo "Wallet creation failed"; exit 1; }
+    echo "请确保钱包里有水，再部署合约。"
 }
 
 # 部署合约
@@ -147,14 +159,19 @@ function main_menu() {
 		echo "当前版本：$current_version"
 		echo "沟通电报群：https://t.me/lumaogogogo"
 	    echo "请选择要执行的操作:"
-	    echo "1. 创建钱包 create_wallet"
-	    echo "2. 部署合约 install_contract"
+        
+	    echo "1. 部署环境 install_env"
+        echo "2. 创建钱包 create_wallet"
+        echo "3. 导入钱包 recover_wallet"
+	    echo "4. 部署合约 install_contract"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
 	    case $OPTION in
-	    1) create_wallet ;;
-	    2) install_contract ;;
+	    1) install_env ;;
+        2) create_wallet ;;
+        3) recover_wallet ;;
+	    4) install_contract ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
